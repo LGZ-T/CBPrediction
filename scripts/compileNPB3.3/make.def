@@ -1,0 +1,36 @@
+#mpi compiler and falgs
+MPIF77 = mpif90
+FMPI_INC = -I/usr/local/include
+
+#c compiler and flags
+MPICC = clang-3.5
+CC = $(MPICC) -g
+CMPI_INC = -I/usr/local/include -I/usr/lib/openmpi/include -I/usr/lib/openmpi/include/openmpi
+CLINKFLAGS = -O -I/usr/lib/openmpi/include -I/usr/lib/openmpi/include/openmpi -pthread \
+             -L/usr/lib -L/usr/lib/openmpi/lib -L/usr/local/lib -lmpi -ldl -lhwloc -mcmodel=medium
+
+#other settings
+BINDIR	= ../bin
+RAND   = randi8
+
+
+ifdef llvm
+LLVMSUFFIX=bc
+CLINK = llvm-link-3.5
+FLINK = llvm-link-3.5
+FFLAGS = -O -S -fplugin=${DRAGONEGG} -fplugin-arg-dragonegg-emit-ir -fdump-rtl-expand
+CFLAGS = $(CLINKFLAGS) -c -emit-llvm
+CLINKFLAGS =
+FLINKFLAGS = 
+CMPI_LIB = 
+FMPI_LIB = 
+else
+FLINK = $(MPIF77)
+CLINK = $(MPICC)
+FFLAGS = -O -mcmodel=medium
+CFLAGS = $(CLINKFLAGS)
+FLINKFLAGS = -O
+CMPI_LIB  = -L/usr/local/lib -L/usr/lib -L/usr/lib/openmpi/lib -lmpi -ldl -lhwloc
+FMPI_LIB  = -L/usr/local/lib -lmpi
+endif
+

@@ -1,0 +1,4 @@
+mpic++ -std=c++11 cgpop.llvm.180x120.bbtime.o getbbtime.cpp -o cgpop.180x120.bbtime -lnetcdf -lnetcdff -L/usr/lib/gcc/x86_64-linux-gnu/4.8/libfortran.a -lgfortran -L/usr/local/lib/openmpi -lmpi_mpifh
+
+#to make the .bc file inline
+opt-3.5 -inline bcfile -o outfile; opt-3.5 -always-inline bcfile -o outfile
