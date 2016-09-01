@@ -13,6 +13,7 @@ add_library(CodeBlockPred SHARED
    CBCount.cpp
    CBCycle.cpp
    CBOperation.cpp
+   VariedCBCycle.cpp
     )
 target_link_libraries(CodeBlockPred
 	${LLVM_DYNAMIC_LIBRARY}

@@ -30,7 +30,7 @@ namespace{
                     errs() << "\n";
                 }
             }*/
-            process_module(M, "outinfo_cbcycle");
+            process_module(M, "outinfo_cbcycle", false);
             return true;
         }
 

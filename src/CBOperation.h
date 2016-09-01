@@ -4,7 +4,7 @@ using namespace llvm;
 
 namespace
 {
-    void process_module(Module &M, std::string out);
+    void process_module(Module &M, std::string out, bool isopt);
 }
 
 

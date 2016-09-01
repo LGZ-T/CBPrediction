@@ -11,7 +11,7 @@ namespace{
         
         bool runOnModule(Module &M) override
         {
-            process_module(M,"outinfo_cbcount");
+            process_module(M,"outinfo_cbcount", false);
             return true;
         }
     };

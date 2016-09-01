@@ -15,10 +15,11 @@ using namespace llvm;
 
 namespace
 {
-    enum inst_type {reg_inst, incall_inst, mpicall_inst, outcall_inst, notfound};    
+     enum inst_type {reg_inst, incall_inst, /*mpicall_inst,*/ libcall_inst, notfound};    
      std::string outfunc, mainfunc, skifunc;
      unsigned long long cbid; 
      GlobalVariable *Count, *Cycle;
+     bool use_opt;
 
      Constant *Inc, *GC;
      Type *ATy, *int64ty;
@@ -67,7 +68,7 @@ namespace
     /*
      * if the instruction is not a call, then return reg_inst;
      * if the instruction is a call inst, but i cannot get the callee(see llvm document for getCalledFunction),
-     * return outcall_inst;
+     * return libcall_inst;
      * if the instruction is a call inst, and the callee is defined in the module.return incall_inst;
      */
     inst_type  my_inst_type(Instruction *inst,Module &M)
@@ -98,11 +99,11 @@ namespace
                     << temp.substr(pos-length,length) << "\n";
                 return  notfound;
             }
-            if(func->isDeclaration()) return outcall_inst;
+            if(func->isDeclaration()) return libcall_inst;
             else return incall_inst;
         }
 
-        if(callfunc->getCalledFunction()->isDeclaration()) return outcall_inst;
+        if(callfunc->getCalledFunction()->isDeclaration()) return libcall_inst;
         return incall_inst;
     }
 
@@ -166,7 +167,7 @@ namespace
         Instruction *bbfirst = first;
         Instruction *bblast = &*(--(bb.end()));
         int continue_inst = 0;
-        bool hasinserted = false;
+        bool hasinserted = false, varied_cb = false;
         while(((Instruction*)itet)!=bblast)
         {
             inst_type temp_inst_type = my_inst_type((Instruction*)itet,M);
@@ -174,9 +175,10 @@ namespace
             {
                 ++continue_inst;
             }
-            else if(temp_inst_type==outcall_inst)
+            else if(temp_inst_type==libcall_inst)
             {
                 continue_inst=5;
+                varied_cb = true;
             }
             else
             {
@@ -189,12 +191,14 @@ namespace
                         insertCBCount(Builder);
                         hasinserted = true;
                     }
-                    if(outfunc=="outinfo_cbcycle")
+                    if(outfunc=="outinfo_cbcycle" && 
+                        (!use_opt || (use_opt && varied_cb)))
                     {
                         Builder.SetInsertPoint(first);
                         insertCBCycle(Builder,true);
                         Builder.SetInsertPoint(itet);
                         insertCBCycle(Builder,false);
+                        varied_cb = false;
                     }
                 }
                 ++itet;
@@ -215,12 +219,14 @@ namespace
                         insertCBCount(Builder);
                         hasinserted = true;
                     }
-                    if(outfunc=="outinfo_cbcycle")
+                    if(outfunc=="outinfo_cbcycle" && 
+                        (!use_opt || (use_opt && varied_cb)))
                     {
                         Builder.SetInsertPoint(first);
                         insertCBCycle(Builder,true);
                         Builder.SetInsertPoint(bblast);
                         insertCBCycle(Builder,false);
+                        varied_cb = false;
                     }
 
                 }
@@ -228,11 +234,12 @@ namespace
         }
     }
 
-    void process_module(Module &M, std::string out)
+    void process_module(Module &M, std::string out, bool isopt)
     {
         LLVMContext &Context = M.getContext();
         IRBuilder<> Builder(Context);
         cbid = -1;
+        use_opt = isopt;
 
         ATy = ArrayType::get(Type::getInt64Ty(Context),NUMBLOCKS);
 
