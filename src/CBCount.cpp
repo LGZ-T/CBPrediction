@@ -18,4 +18,4 @@ namespace{
 }
 
 char CBCount::ID = 0;
-static RegisterPass<CBCount> X("CBCount","get the execution count of basic block",false,false);
+static RegisterPass<CBCount> X("CBCount","get the execution counts of all basic block",false,false);

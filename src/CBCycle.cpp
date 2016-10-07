@@ -43,4 +43,4 @@ namespace{
 }
 
 char CBCycle::ID = 0;
-static RegisterPass<CBCycle> X("CBCycle","get the execute time of main basic block",false,false);
+static RegisterPass<CBCycle> X("CBCycle","get the execute cycles of all code blocks",false,false);

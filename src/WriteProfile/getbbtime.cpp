@@ -28,9 +28,9 @@ void outinfo_cbcycle()
     if(fp==NULL) { printf("open file wrong\n"); return; }
     for(i=0;i<MAXBB;++i)
     {
-        if(BlockPredCount[i]==0) BlockPredCount[i] = BlockPredCount[i-1];
-        if(BlockPredCycle[i]==0) continue;
-        fprintf(fp,"%d\t%Lf\t%llu\n",i,BlockPredCycle[i]/(t*BlockPredCount[i]),BlockPredCount[i]);    
+        //if(BlockPredCount[i]==0) BlockPredCount[i] = BlockPredCount[i-1];
+        //if(BlockPredCycle[i]==0) continue;
+        fprintf(fp,"%d\t%Lf\t%llu\n",i,BlockPredCycle[i],BlockPredCount[i]);    
     }
     fclose(fp);
 }
@@ -45,7 +45,7 @@ void outinfo_cbcount()
     if(fp==NULL) { printf("open file wrong\n"); return; }
     for(i=0;i<MAXBB;++i)
     {
-        if(BlockPredCount[i]==0) continue;
+        //if(BlockPredCount[i]==0) continue;
         fprintf(fp,"%d\t%llu\n",i,BlockPredCount[i]);    
     }
     fclose(fp);

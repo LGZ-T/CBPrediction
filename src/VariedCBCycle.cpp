@@ -20,4 +20,4 @@ namespace{
 }
 
 char VariedCBCycle::ID = 0;
-static RegisterPass<VariedCBCycle> X("VaryCBCyc","get the execute cycle of non-constant code block",false,false);
+static RegisterPass<VariedCBCycle> X("VaryCBCyc","get the execute cycles of non-constant code blocks",false,false);

@@ -8,7 +8,7 @@
 #include <llvm/IR/Function.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/ValueSymbolTable.h>
-
+#include <fstream>
 #define NUMBLOCKS 20000
 
 using namespace llvm;
@@ -24,7 +24,7 @@ Type *ATy, *int64ty;
 Function *GetCycle;
 
 
-void insertCBCount(IRBuilder<>& Builder)
+void insertCBCount(IRBuilder<>& Builder, std::ofstream &record_pos)
 {
     if(cbid>=NUMBLOCKS) { errs() << "excede the maxmium code blocs(20000)\n"; exit(1); }
     LLVMContext &Context = Inc->getContext();
@@ -38,6 +38,7 @@ void insertCBCount(IRBuilder<>& Builder)
             Builder.CreateZExtOrBitCast(Inc,Type::getInt64Ty(Context)),
             "NewBlockCounter");
     Builder.CreateStore(NewVal, ElementPtr);
+    record_pos << cbid << std::endl;
 }
 
 
@@ -106,7 +107,7 @@ inst_type  my_inst_type(Instruction *inst,Module &M)
 }
 
 BasicBlock::iterator PreProcessBB(BasicBlock &bb, Function &f, Module &M, 
-        LLVMContext &Context, IRBuilder<>& Builder)
+        LLVMContext &Context, IRBuilder<>& Builder, std::ofstream &record_pos)
 {
     int phiinstcount = 0;
     //skip all phi instructions
@@ -143,7 +144,7 @@ BasicBlock::iterator PreProcessBB(BasicBlock &bb, Function &f, Module &M,
         {
             Builder.SetInsertPoint(first);
             ++cbid;
-            insertCBCount(Builder);
+            insertCBCount(Builder,record_pos);
             if(outfunc=="outinfo_cbcycle")
             {
                 insertCBCycle(Builder,true);
@@ -159,7 +160,7 @@ BasicBlock::iterator PreProcessBB(BasicBlock &bb, Function &f, Module &M,
 }
 
 void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M, 
-        IRBuilder<>& Builder)
+        IRBuilder<>& Builder, std::ofstream &record_pos)
 {
     Instruction *first = (Instruction *)itet;
     Instruction *bbfirst = first;
@@ -186,7 +187,7 @@ void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M,
                 if(!hasinserted)
                 {
                     Builder.SetInsertPoint(bbfirst);
-                    insertCBCount(Builder);
+                    insertCBCount(Builder,record_pos);
                     hasinserted = true;
                 }
                 if(outfunc=="outinfo_cbcycle" && 
@@ -214,7 +215,7 @@ void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M,
                 if(!hasinserted)
                 {
                     Builder.SetInsertPoint(bbfirst);
-                    insertCBCount(Builder);
+                    insertCBCount(Builder,record_pos);
                     hasinserted = true;
                 }
                 if(outfunc=="outinfo_cbcycle" && 
@@ -239,6 +240,7 @@ void process_module(Module &M, std::string out, bool isopt)
     cbid = -1;
     use_opt = isopt;
 
+    std::ofstream record_pos("record_pos");
     ATy = ArrayType::get(Type::getInt64Ty(Context),NUMBLOCKS);
 
     Count = new GlobalVariable(M, ATy, false,
@@ -272,9 +274,11 @@ void process_module(Module &M, std::string out, bool isopt)
             BasicBlock &bb = *itebb;
             BasicBlock::iterator itet;
 
-            if((itet=PreProcessBB(bb,f,M,Context,Builder))==bb.end()) continue;
+            if((itet=PreProcessBB(bb,f,M,Context,Builder,record_pos))==bb.end()) continue;
 
-            SplitBB(itet,bb,M,Builder);
+            SplitBB(itet,bb,M,Builder,record_pos);
         }
     }
+    record_pos << cbid << std::endl;
+    record_pos.close();
 }
