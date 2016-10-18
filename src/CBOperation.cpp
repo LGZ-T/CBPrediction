@@ -147,6 +147,7 @@ BasicBlock::iterator PreProcessBB(BasicBlock &bb, Function &f, Module &M,
             insertCBCount(Builder,record_pos);
             if(outfunc=="outinfo_cbcycle")
             {
+                errs() << cbid << "\n";
                 insertCBCycle(Builder,true);
                 Builder.SetInsertPoint(last);
                 insertCBCycle(Builder,false);
@@ -193,6 +194,7 @@ void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M,
                 if(outfunc=="outinfo_cbcycle" && 
                         (!use_opt || (use_opt && varied_cb)))
                 {
+                    errs() << cbid << "\n";
                     Builder.SetInsertPoint(first);
                     insertCBCycle(Builder,true);
                     Builder.SetInsertPoint(itet);
@@ -221,6 +223,7 @@ void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M,
                 if(outfunc=="outinfo_cbcycle" && 
                         (!use_opt || (use_opt && varied_cb)))
                 {
+                    errs() << cbid << "\n";
                     Builder.SetInsertPoint(first);
                     insertCBCycle(Builder,true);
                     Builder.SetInsertPoint(bblast);
