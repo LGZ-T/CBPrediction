@@ -78,7 +78,6 @@ int main(int argc, char *argv[])
     ulonglong cstart, cend;
     clock_gettime(CLOCK_MONOTONIC, &start);
     cstart=timing();
-    print_preamble(rank);
     
     for(size=options.min_message_size; size <= options.max_message_size; size *= 2) {
         if(size > LARGE_MESSAGE_SIZE) {
@@ -111,15 +110,18 @@ int main(int argc, char *argv[])
                 MPI_COMM_WORLD);
         avg_time = avg_time/numprocs;
 
-        print_stats(rank, size, avg_time, min_time, max_time);
     }
     
     cend = timing();
     clock_gettime(CLOCK_MONOTONIC, &end);
     result = diff(start,end);
-    printf("##############################\n");
-    printf("cpu hz: %lf\n", (cend-cstart)/result/1000000000.0);
-    printf("##############################\n");
+    if(rank==0)
+    {
+         printf("##############################\n");
+         printf("cpu hz: %lf\n", (cend-cstart)/result/1000000000.0);
+         printf("##############################\n");
+    }
+   
     free_buffer(buffer, options.accel);
 
     MPI_Finalize();

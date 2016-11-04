@@ -23,7 +23,7 @@ Constant *Inc, *GC;
 Type *ATy, *int64ty;
 Function *GetCycle;
 
-
+//the record_pos is used to record the boundry line of a basic block
 void insertCBCount(IRBuilder<>& Builder, std::ofstream &record_pos)
 {
     if(cbid>=NUMBLOCKS) { errs() << "excede the maxmium code blocs(20000)\n"; exit(1); }

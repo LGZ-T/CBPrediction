@@ -222,31 +222,6 @@ double	randlc( double *X, double *A );
 
 void full_verify( void );
 
-void c_print_results( char   *name,
-                      char   class,
-                      int    n1, 
-                      int    n2,
-                      int    n3,
-                      int    niter,
-                      double t,
-                      double mops,
-		      char   *optype,
-                      int    passed_verification,
-                      char   *npbversion,
-                      char   *compiletime,
-                      char   *cc,
-                      char   *clink,
-                      char   *c_lib,
-                      char   *c_inc,
-                      char   *cflags,
-                      char   *clinkflags );
-
-
-void    timer_clear( int n );
-void    timer_start( int n );
-void    timer_stop( int n );
-double  timer_read( int n );
-
 
 /*
  *    FUNCTION RANDLC (X, A)
@@ -680,23 +655,6 @@ int main( int argc, char **argv )
 
     FILE            *fp;
 
-
-/*  Initialize timers  */
-    timer_on = 0;            
-    if ((fp = fopen("timer.flag", "r")) != NULL) {
-        fclose(fp);
-        timer_on = 1;
-    }
-    timer_clear( 0 );
-    if (timer_on) {
-        timer_clear( 1 );
-        timer_clear( 2 );
-        timer_clear( 3 );
-    }
-
-    if (timer_on) timer_start( 3 );
-
-
 /*  Initialize the verification arrays if a valid class */
     for( i=0; i<TEST_ARRAY_SIZE; i++ )
         switch( CLASS )
@@ -735,12 +693,9 @@ int main( int argc, char **argv )
     printf( " Size:  %ld  (class %c)\n", (long)TOTAL_KEYS, CLASS );
     printf( " Iterations:   %d\n", MAX_ITERATIONS );
 
-    if (timer_on) timer_start( 1 );
-
 /*  Generate random number sequence and subsequent keys on all procs */
     create_seq( 314159265.00,                    /* Random number gen seed */
                 1220703125.00 );                 /* Random number gen mult */
-    if (timer_on) timer_stop( 1 );
 
 
 /*  Do one interation for free (i.e., untimed) to guarantee initialization of  
@@ -751,9 +706,6 @@ int main( int argc, char **argv )
     passed_verification = 0;
 
     if( CLASS != 'S' ) printf( "\n   iteration\n" );
-
-/*  Start timer  */             
-    timer_start( 0 );
 
 
 /*  This is the main iteration */
@@ -775,65 +727,10 @@ int main( int argc, char **argv )
     printf("cpu hz: %lf\n", (cend-cstart)/result/1000000000.0);
     printf("#############################\n");
 
-/*  End of timing, obtain maximum time of all processors */
-    timer_stop( 0 );
-    timecounter = timer_read( 0 );
-
-
-/*  This tests that keys are in sequence: sorting of last ranked key seq
-    occurs here, but is an untimed operation                             */
-    if (timer_on) timer_start( 2 );
-    full_verify();
-    if (timer_on) timer_stop( 2 );
-
-    if (timer_on) timer_stop( 3 );
-
-
 /*  The final printout  */
     if( passed_verification != 5*MAX_ITERATIONS + 1 )
         passed_verification = 0;
-    c_print_results( "IS",
-                     CLASS,
-                     (int)(TOTAL_KEYS/64),
-                     64,
-                     0,
-                     MAX_ITERATIONS,
-                     timecounter,
-                     ((double) (MAX_ITERATIONS*TOTAL_KEYS))
-                                                  /timecounter/1000000.,
-                     "keys ranked", 
-                     passed_verification,
-                     NPBVERSION,
-                     COMPILETIME,
-                     CC,
-                     CLINK,
-                     C_LIB,
-                     C_INC,
-                     CFLAGS,
-                     CLINKFLAGS );
-
-
-/*  Print additional timers  */
-    if (timer_on) {
-       double t_total, t_percent;
-
-       t_total = timer_read( 3 );
-       printf("\nAdditional timers -\n");
-       printf(" Total execution: %8.3f\n", t_total);
-       if (t_total == 0.0) t_total = 1.0;
-       timecounter = timer_read(1);
-       t_percent = timecounter/t_total * 100.;
-       printf(" Initialization : %8.3f (%5.2f%%)\n", timecounter, t_percent);
-       timecounter = timer_read(0);
-       t_percent = timecounter/t_total * 100.;
-       printf(" Benchmarking   : %8.3f (%5.2f%%)\n", timecounter, t_percent);
-       timecounter = timer_read(2);
-       t_percent = timecounter/t_total * 100.;
-       printf(" Sorting        : %8.3f (%5.2f%%)\n", timecounter, t_percent);
-    }
-
-
-    return 0;
+        return 0;
          /**************************/
 }        /*  E N D  P R O G R A M  */
          /**************************/
