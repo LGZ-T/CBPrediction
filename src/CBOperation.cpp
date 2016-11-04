@@ -137,7 +137,7 @@ BasicBlock::iterator PreProcessBB(BasicBlock &bb, Function &f, Module &M,
     //except for one situation:
     //and there is no call instruction, we ignore these code blocks
     if(first==last) return bb.end();
-    if(bb.size()-phiinstcount <= 2)
+    if(bb.size()-phiinstcount <= 10)
     {
         if(std::string(first->getOpcodeName())=="call" && 
                 my_inst_type(first,M)!=incall_inst)
@@ -182,7 +182,7 @@ void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M,
         }
         else
         {
-            if(continue_inst>=3)
+            if(continue_inst>=11)
             {
                 ++cbid;
                 if(!hasinserted)
@@ -211,7 +211,7 @@ void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M,
         ++itet;
         if(((Instruction*)itet)==bblast)
         {
-            if(continue_inst>=3)
+            if(continue_inst>=11)
             {
                 ++cbid;
                 if(!hasinserted)
