@@ -176,7 +176,7 @@ void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M,
         }
         else if(temp_inst_type==libcall_inst)
         {
-            continue_inst=5;
+            continue_inst=12;
             varied_cb = true;
         }
         else
