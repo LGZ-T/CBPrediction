@@ -191,7 +191,6 @@ void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M,
             first = (Instruction*)itet;
             continue_inst = 0;
         }
-        ++itet;
         if(((Instruction*)itet)==bblast)
         {
             if(continue_inst>=11)
@@ -206,7 +205,7 @@ void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M,
                 if(outfunc=="outinfo_cbcycle" && 
                         (!use_opt || (use_opt && varied_cb)))
                 {
-                    errs() << cbid << "\n";
+                    //errs() << cbid << "\n";
                     Builder.SetInsertPoint(first);
                     insertCBCycle(Builder,true);
                     Builder.SetInsertPoint(bblast);
@@ -249,7 +248,7 @@ void process_module(Module &M, std::string out, bool isopt)
         skifunc = "";
     }
     outfunc = out;
-
+    
     for(Module::iterator itefunc=M.begin(),endfunc=M.end();itefunc!=endfunc;++itefunc)
     {
         Function &f = *itefunc;
@@ -265,7 +264,6 @@ void process_module(Module &M, std::string out, bool isopt)
             SplitBB(itet,bb,M,Builder,record_pos);
         }
     }
-
     Constant *FuncEntry = M.getOrInsertFunction(outfunc,Type::getVoidTy(Context),nullptr,nullptr);
     CallInst::Create(FuncEntry,"",outputpos);
     record_pos << cbid << std::endl;
