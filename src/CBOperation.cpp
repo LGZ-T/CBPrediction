@@ -106,6 +106,8 @@ inst_type  my_inst_type(Instruction *inst,Module &M)
     return incall_inst;
 }
 
+
+Instruction *outputpos=nullptr;
 BasicBlock::iterator PreProcessBB(BasicBlock &bb, Function &f, Module &M, 
         LLVMContext &Context, IRBuilder<>& Builder, std::ofstream &record_pos)
 {
@@ -129,32 +131,13 @@ BasicBlock::iterator PreProcessBB(BasicBlock &bb, Function &f, Module &M,
     if(std::string(f.getName())==mainfunc && 
             std::string(last->getOpcodeName())=="ret")
     {
-        Constant *FuncEntry = M.getOrInsertFunction(outfunc, Type::getVoidTy(Context),nullptr,nullptr);
-        CallInst::Create(FuncEntry,"",last);
+        outputpos = last;
     }
 
-    //if there are less than 3 instructions execpt for phi instruction, we ignore this code block,
+    //if there are less than 11 instructions execpt for phi instruction, we ignore this code block,
     //except for one situation:
     //and there is no call instruction, we ignore these code blocks
     if(first==last) return bb.end();
-    if(bb.size()-phiinstcount <= 10)
-    {
-        if(std::string(first->getOpcodeName())=="call" && 
-                my_inst_type(first,M)!=incall_inst)
-        {
-            Builder.SetInsertPoint(first);
-            ++cbid;
-            insertCBCount(Builder,record_pos);
-            if(outfunc=="outinfo_cbcycle")
-            {
-                insertCBCycle(Builder,true);
-                Builder.SetInsertPoint(last);
-                insertCBCycle(Builder,false);
-            }
-        }
-        return bb.end();
-    }
-
     while(my_inst_type((Instruction*)itet,M)==incall_inst) { ++itet; }
     return itet;
 }
@@ -173,11 +156,13 @@ void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M,
         if(temp_inst_type==reg_inst)
         {
             ++continue_inst;
+            ++itet;
         }
         else if(temp_inst_type==libcall_inst)
         {
             continue_inst=12;
             varied_cb = true;
+            ++itet;
         }
         else
         {
@@ -204,7 +189,6 @@ void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M,
             first = (Instruction*)itet;
             continue_inst = 0;
         }
-        ++itet;
         if(((Instruction*)itet)==bblast)
         {
             if(continue_inst>=11)
@@ -214,7 +198,7 @@ void SplitBB(BasicBlock::iterator itet, BasicBlock &bb, Module &M,
                 if(outfunc=="outinfo_cbcycle" && 
                         (!use_opt || (use_opt && varied_cb)))
                 {
-                    Builder.SetInsertPoint(bbfirst);
+                    Builder.SetInsertPoint(first);
                     insertCBCount(Builder,record_pos);
 
                     Builder.SetInsertPoint(first);
@@ -275,6 +259,9 @@ void process_module(Module &M, std::string out, bool isopt)
             SplitBB(itet,bb,M,Builder,record_pos);
         }
     }
+
+    Constant *FuncEntry = M.getOrInsertFunction(outfunc, Type::getVoidTy(Context),nullptr,nullptr);
+    CallInst::Create(FuncEntry,"",outputpos);
     record_pos << cbid << std::endl;
     record_pos.close();
 }
