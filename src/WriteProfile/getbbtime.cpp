@@ -30,7 +30,7 @@ void outinfo_cbcycle()
     {
         //if(BlockPredCount[i]==0) BlockPredCount[i] = BlockPredCount[i-1];
         //if(BlockPredCycle[i]==0) continue;
-        fprintf(fp,"%d\t%Lf\t%llu\n",i,BlockPredCycle[i],BlockPredCount[i]);    
+        fprintf(fp,"%d\t%llu\t%llu\n",i,BlockPredCycle[i],BlockPredCount[i]);    
     }
     fclose(fp);
 }

@@ -84,7 +84,7 @@ inst_type  my_inst_type(Instruction *inst,Module &M)
 
         //this could happen when the callee is a func pointer
         //for now, we just consider it as a incall_inst
-        if(pos==std::string::npos){ errs() << "callee is not found\n"; return incall_inst; }
+        if(pos==std::string::npos){ errs() << "callee is not found\n"; /*errs() << *inst <<"\n";*/return incall_inst; }
         ++pos;
         while(temp[pos]!=' ')
         {
