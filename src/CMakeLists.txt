@@ -20,7 +20,3 @@ target_link_libraries(CodeBlockPred
 	-L/home/wzzhang/usr/local/lib/
 	)
 
-if(LLVM_VERSION VERSION_EQUAL "3.4")
-   # print Asm code for a bitcode
-
-endif()

@@ -74,7 +74,11 @@ inst_type  my_inst_type(Instruction *inst,Module &M)
 {
     CallInst *callfunc = (CallInst *)inst;
     if(std::string(inst->getOpcodeName())!="call") return reg_inst;
-    if(callfunc->getCalledFunction()==nullptr) 
+
+
+    Function *callee = callfunc->getCalledFunction();
+    //if the calle can not be extracted by getCalledFunction, we need to extract the info by hand
+    if(callee==nullptr) 
     {
         std::string inststr;
         raw_string_ostream inststream(inststr); 
@@ -101,9 +105,24 @@ inst_type  my_inst_type(Instruction *inst,Module &M)
         if(func->isDeclaration()) return libcall_inst;
         else return incall_inst;
     }
+    else
+    {
+        std::string funcname = callee->getName().str();
 
-    if(callfunc->getCalledFunction()->isDeclaration()) return libcall_inst;
-    return incall_inst;
+        //this is a intrinsic function
+        if(funcname.substr(0,4)=="llvm") return reg_inst;
+
+        //this is a mpi non blocking function
+        if(funcname.substr(0,5)=="MPI_I") return reg_inst;
+
+        /**if the function is the basic math function, then we treat
+         * it as a reg_inst. Need to be fixed
+         * */
+
+        
+        if(callee->isDeclaration()) return libcall_inst;
+        else return incall_inst;
+    }
 }
 
 Instruction *outputpos=nullptr;

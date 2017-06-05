@@ -16,10 +16,10 @@ option(WITH_DEBUG "Enable Extra Debug Output" On)
 
 
 find_package(PkgConfig)
-pkg_check_modules(GSL gsl REQUIRED)
 
 if(NOT WITH_DEBUG)
    set(NO_DEBUG On)
 endif()
 
+set(LLVM_DYNAMIC_LIBRARY /usr/local/llvm-3.5.2/lib)
 add_subdirectory(src)
